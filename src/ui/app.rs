@@ -1,7 +1,5 @@
-use std::cell;
-
 use eframe::egui;
-use crate::sudoku::{Generator, Grid, Solver, generator::Difficulty, grid};
+use crate::sudoku::{Generator, Grid, Solver, generator::Difficulty};
 
 pub struct SudokuApp{
     grid: Grid,
@@ -46,10 +44,22 @@ impl eframe::App for SudokuApp {
             ui.add_space(5.0);
 
             ui.horizontal(|ui| {
-                if ui.button("Solve").clicked(){
+                if ui.button("Solve").clicked() {
                     let mut solving_grid = self.grid.clone();
+
+                    for row in 0..9 {
+                        for col in 0..9 {
+                            solving_grid.set_fixed(row, col, false);
+                        }
+                    }
+
                     if Solver::solve(&mut solving_grid){
-                        self.grid = solving_grid;
+                        for row in 0..9{
+                            for col in 0..9{
+                                let value = solving_grid.get(row, col);
+                                self.grid.set(row, col, value);
+                            }
+                        }
                         self.game_won = true;
                     }
                 }
@@ -155,13 +165,13 @@ impl SudokuApp {
                 for num in 1..=9{
                     if ui.button(num.to_string()).clicked(){
                         if let Some((row, col)) = self.selected_cell{
-                            self.grid.set(row, col, num);
+                            self.grid.set_user(row, col, num);
                         }
                     }
                 }
                 if ui.button("Clear").clicked(){
                     if let Some((row, col)) = self.selected_cell{
-                        self.grid.set(row, col, 0);
+                        self.grid.set_user(row, col, 0);
                     }
                 }
             });

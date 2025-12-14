@@ -17,10 +17,14 @@ impl Grid {
     }
 
     pub fn set(&mut self, row: usize, col: usize, value: u8) {
-        if !self.fixed[row][col] {
-            self.cells[row][col] = value;
-        }
+        self.cells[row][col] = value;
     }
+
+    pub fn set_user(&mut self, row: usize, col: usize, value: u8) {
+    if !self.fixed[row][col] {
+        self.cells[row][col] = value;
+    }
+}
 
     pub fn is_fixed(&self, row: usize, col: usize) -> bool {
         self.fixed[row][col]

@@ -8,33 +8,41 @@ impl Solver {
     }
 
     fn backtrack(grid: &mut Grid, mut row: usize, mut col: usize) -> bool {
-        while row < 9 {
-            while col < 9 {
-                if grid.get(row, col) == 0 {
-                    for num in 1..=9 {
-                        if Self::is_safe(grid, row, col, num){
-                            grid.set(row, col, num);
-                            let (next_row, next_col) = if col == 0{
-                                (row + 1, 0)
-                            }
-                            else {
-                                (row, col + 1)
-                            };
-                            if Self::backtrack(grid, next_row, next_col){
-                                return true;
-                            }
-
-                            grid.set(row, col, 0);
-                        }
-                    }
-                    return false;
-                }
-                col += 1;
+        loop{
+            if row >= 9{
+                return true;
             }
-            row += 1;
-            col = 0;
+
+            if grid.get(row, col) == 0 {
+                break;
+            }
+
+            col += 1;
+            if col >= 9{
+                col = 0;
+                row += 1;
+            }
         }
-        true
+
+        for num in 1..=9{
+            if Self::is_safe(grid, row, col, num){
+                grid.set(row, col, num);
+
+                let (next_row, next_col) = if col == 8 {
+                    (row + 1, 0)
+                } else {
+                    (row, col + 1)
+                };
+
+                if Self::backtrack(grid, next_row, next_col){
+                    return true;
+                }
+
+                grid.set(row, col, 0);
+            }
+        }
+
+        false
     }
 
     fn is_safe(grid: &Grid, row: usize, col: usize, num: u8) -> bool {
