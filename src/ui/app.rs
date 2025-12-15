@@ -14,6 +14,7 @@ pub struct SudokuApp{
 
 struct SolverState {
     current_grid: Grid,
+    original_fixed: [[bool; 9]; 9],
     stack: Vec<SolverStep>,
     speed_ms: u64,
 }
@@ -149,6 +150,12 @@ impl eframe::App for SudokuApp {
 impl SudokuApp {
     fn start_animated_solve(&mut self){
         let mut solving_grid = self.grid.clone();
+        let mut original_fixed = [[false; 9]; 9];
+        for row in 0..9{
+            for col in 0..9 {
+                original_fixed[row][col] = solving_grid.is_fixed(row, col);
+            }
+        }
 
         for row in 0..9{
             for col in 0..9 {
@@ -159,6 +166,7 @@ impl SudokuApp {
         self.solving = true;
         self.solver_state = Some(SolverState { 
             current_grid: solving_grid,
+            original_fixed,
             stack: Vec::new(),
             speed_ms: 50
         });
@@ -213,7 +221,7 @@ impl SudokuApp {
 
     let origin = response.rect.min;
 
-    if !self.solving && response.clicked() {  // Only allow clicking when not solving
+    if !self.solving && response.clicked() {  
         if let Some(pos) = response.interact_pointer_pos() {
             let relative = pos - origin;
             let col = (relative.x / cell_size) as usize;
@@ -224,7 +232,6 @@ impl SudokuApp {
         }
     }
 
-    // Highlight the current solving cell
     let solving_cell = if let Some(ref state) = self.solver_state {
         if let Some(last_step) = state.stack.last() {
             Some((last_step.row, last_step.col))
@@ -242,8 +249,14 @@ impl SudokuApp {
                 egui::Vec2::splat(cell_size),
             );
 
+            let is_originally_fixed = if let Some(ref state) = self.solver_state {
+                state.original_fixed[row][col]
+            } else {
+                self.grid.is_fixed(row, col)
+            };
+
             let color = if Some((row, col)) == solving_cell {
-                egui::Color32::from_rgb(255, 200, 200) // Red highlight for solving
+                egui::Color32::from_rgb(255, 200, 200) 
             } else if Some((row, col)) == self.selected_cell {
                 egui::Color32::from_rgb(200, 220, 255)
             } else if self.grid.is_fixed(row, col){
@@ -255,7 +268,7 @@ impl SudokuApp {
 
             let value = self.grid.get(row, col);
             if value != 0 {
-                let text_color = if self.grid.is_fixed(row, col){
+                let text_color = if is_originally_fixed{
                     egui::Color32::BLACK
                 } else {
                     egui::Color32::BLUE
