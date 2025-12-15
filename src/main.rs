@@ -8,14 +8,14 @@ fn main() -> Result<(), eframe::Error> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([600.0, 700.0])
             .with_resizable(true)
-            .with_title("Sudoku Game"),
+            .with_title("Sudoku"),
         ..Default::default()
     };
 
     println!("Creating window...");
     
     eframe::run_native(
-        "Sudoku Game",
+        "Sudoku",
         options,
         Box::new(|_cc| {
             println!("App created!");

@@ -7,6 +7,7 @@ pub struct Generator;
 impl Generator {
     pub fn generate(difficulty: Difficulty) -> Grid {
         let mut grid = Grid::new();
+        let mut rng = rand::thread_rng();
 
         Self::fill_diagonal_boxes(&mut grid);
         Solver::solve(&mut grid);
@@ -17,7 +18,7 @@ impl Generator {
             Difficulty::Hard => 55,
         };
 
-        Self::remove_cells(&mut grid, cells_to_remove);
+        Self::remove_cells(&mut grid, cells_to_remove, &mut rng);
 
         for row in 0..9 {
             for col in 0..9 {
@@ -48,17 +49,42 @@ impl Generator {
         }
     }
 
-    fn remove_cells(grid: &mut Grid, count: usize) {
-        let mut rng = rand::thread_rng();
+    fn remove_cells(grid: &mut Grid, count: usize, rng: &mut impl Rng) {
         let mut removed = 0;
+        let mut attempts = 0;
+        let max_attempts = count * 15;
 
-        while removed < count {
-            let row = rng.gen_range(0..9);
-            let col = rng.gen_range(0..9);
+        let mut positions: Vec<(usize, usize)> = Vec::new();
+        for row in 0..9 {
+            for col in 0..9 {
+                positions.push((row, col));
+            }
+        }
+
+        for i in (1..positions.len()).rev(){
+            let j = rng.gen_range(0..=i);
+            positions.swap(i, j);
+        }
+
+        for &(row, col) in &positions {
+            if removed >= count {
+                break;
+            }
 
             if grid.get(row, col) != 0 {
+                let backup = grid.get(row, col);
                 grid.set(row, col, 0);
-                removed += 1;
+                let mut test_grid = grid.clone();
+                if Solver::solve(&mut test_grid){
+                    removed += 1;
+                } else {
+                    grid.set(row, col, backup);
+                }
+            }
+
+            attempts += 1;
+            if attempts >= max_attempts {
+                break;
             }
         }
     }
