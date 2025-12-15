@@ -45,6 +45,41 @@ impl Solver {
         false
     }
 
+    pub fn find_next_empty(grid: &Grid, start_row: usize, start_col: usize) -> Option<(usize, usize)> {
+        let mut row = start_row;
+        let mut col = start_col;
+
+        loop {
+             if row >= 9 {
+                return None;
+             }
+
+             if grid.get(row, col) == 0 {
+                return Some((row, col));
+             }
+
+             col += 1;
+             if col >= 9 {
+                col = 0;
+                row += 1;
+             }
+        }
+    }
+
+    pub fn get_valid_numbers(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
+        let mut valid = Vec::new();
+        for num in 1..=9 {
+            if Self::is_safe(grid, row, col, num){
+                valid.push(num);
+            }
+        }
+        valid
+    }
+
+    pub fn is_safe_static(grid: &Grid, row: usize, col: usize, num: u8) -> bool{
+        Self::is_safe(grid, row, col, num)
+    }
+
     fn is_safe(grid: &Grid, row: usize, col: usize, num: u8) -> bool {
         for c in 0..9{
             if grid.get(row, c) == num{
